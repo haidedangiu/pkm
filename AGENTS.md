@@ -1,4 +1,3 @@
-```
 # Coding Agent Protocol
 
 ## Rule 0
@@ -41,19 +40,63 @@ When stopping: state what's done, what's blocked, open questions, files touched.
 When confused: stop, think, present theories, get signoff. Never silently retry failures.
 
 ## Memory Protocol
-Before answering any coding question, call `get_relevant_context` FIRST.
-This retrieves learnings, past decisions, and similar problems from the knowledge base.
 
-Triggers for Memory Check:
+Du hast Zugriff auf Q's PKM (Personal Knowledge Management) System. Nutze es.
+
+### PKM API Access
+
+**Query Learnings:**
+```bash
+curl -X POST http://138.2.155.73:3847/api/smart-query \
+  -H "Content-Type: application/json" \
+  -d '{"intent": "deine frage hier"}'
+```
+
+**Beispiel-Queries die funktionieren:**
+- `{"intent": "show all"}` - Alle Learnings abrufen
+- `{"intent": "Cloud Agent Architecture"}` - Themensuche
+- `{"intent": "iOS app features"}` - Projektspezifisch
+- `{"intent": "recent decisions"}` - Letzte Entscheidungen
+
+**Response Format:**
+```json
+{
+  "learnings": [...],
+  "count": 10,
+  "query": {"intent": "...", "filters": {...}},
+  "patternSaved": true
+}
+```
+
+### Wann PKM abfragen (IMMER zuerst):
 - Architecture decisions
 - Debugging complex issues  
 - "Why is this like that?" questions
 - New features in existing code
-- Any work on known projects (contenthub, teaq, mem-server)
+- Bekannte Projekte: contenthub, teaq, mem-server, ios-app, cloud-agent
 
-After solving problems, use `summarize_session` to capture learnings.
-When something replaces old knowledge, use `deprecate_learning`.
+### Nach gelösten Problemen - Learning speichern:
+```bash
+curl -X POST http://138.2.155.73:3847/api/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Was du gelernt hast - detailliert",
+    "type": "decision",
+    "tags": ["tag1", "tag2"],
+    "project": "project-name"
+  }'
 ```
+
+**Type muss einer sein von:**
+- `content` - Allgemeines Wissen
+- `meta` - Meta-Info über das System selbst  
+- `decision` - Architektur-Entscheidungen (wichtigste!)
+
+### Known Projects in PKM:
+- **cloud-agent**: Agent-as-a-Service Backend, Dual Loop Design
+- **mem-server**: PKM System selbst
+- **ios-app**: Thin Client für Cloud Agent
+- **contenthub**: CIA Content Management System
 
 ---
 
